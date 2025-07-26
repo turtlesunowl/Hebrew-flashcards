@@ -1,0 +1,763 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Hebrew Flashcards">
+    <title>Hebrew Alphabet Flashcards</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            -webkit-text-size-adjust: 100%;
+            -webkit-touch-callout: none;
+            -webkit-user-select: none;
+            user-select: none;
+        }
+ 
+        .header {
+            background: rgba(255,255,255,0.1);
+            backdrop-filter: blur(10px);
+            padding: 15px 20px;
+            text-align: center;
+            color: white;
+            font-weight: bold;
+            font-size: 1.2em;
+            box-shadow: 0 2px 20px rgba(0,0,0,0.1);
+        }
+ 
+        .progress-bar {
+            height: 4px;
+            background: rgba(255,255,255,0.2);
+            margin-top: 10px;
+            border-radius: 2px;
+            overflow: hidden;
+        }
+ 
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #4CAF50, #8BC34A);
+            width: 0%;
+            transition: width 0.5s ease;
+        }
+ 
+        .main-container {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+ 
+        .mode-selector {
+            display: flex;
+            background: rgba(255,255,255,0.1);
+            border-radius: 25px;
+            padding: 5px;
+            margin-bottom: 30px;
+            backdrop-filter: blur(10px);
+        }
+ 
+        .mode-btn {
+            padding: 12px 20px;
+            border: none;
+            background: transparent;
+            color: rgba(255,255,255,0.7);
+            border-radius: 20px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 0.9em;
+            font-weight: 500;
+        }
+ 
+        .mode-btn.active {
+            background: rgba(255,255,255,0.2);
+            color: white;
+            transform: scale(1.05);
+        }
+ 
+        .flashcard-container {
+            perspective: 1000px;
+            margin-bottom: 30px;
+        }
+ 
+        .flashcard {
+            width: 300px;
+            height: 400px;
+            position: relative;
+            transform-style: preserve-3d;
+            transition: transform 0.6s;
+            cursor: pointer;
+        }
+ 
+        .flashcard.flipped {
+            transform: rotateY(180deg);
+        }
+ 
+        .card-face {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            backface-visibility: hidden;
+            border-radius: 20px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            padding: 30px;
+        }
+ 
+        .card-front {
+            background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
+            color: #2c3e50;
+        }
+ 
+        .card-back {
+            background: linear-gradient(135deg, #4CAF50 0%, #45a049 100%);
+            color: white;
+            transform: rotateY(180deg);
+        }
+ 
+        .hebrew-char {
+            font-size: 8em;
+            font-weight: bold;
+            margin-bottom: 20px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
+            line-height: 1;
+        }
+ 
+        .letter-info {
+            font-size: 1.4em;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+ 
+        .letter-sound {
+            font-size: 1.1em;
+            opacity: 0.9;
+            margin-bottom: 15px;
+        }
+ 
+        .recognition-hint {
+            font-size: 0.9em;
+            opacity: 0.8;
+            font-style: italic;
+            background: rgba(255,255,255,0.1);
+            padding: 8px 12px;
+            border-radius: 15px;
+            margin-top: 10px;
+        }
+ 
+        .visual-memory {
+            font-size: 0.85em;
+            opacity: 0.7;
+            margin-top: 8px;
+            background: rgba(0,0,0,0.1);
+            padding: 6px 10px;
+            border-radius: 10px;
+        }
+ 
+        .controls {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+ 
+        .btn {
+            padding: 15px 25px;
+            border: none;
+            border-radius: 25px;
+            font-size: 1em;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(10px);
+            min-width: 80px;
+        }
+ 
+        .btn-primary {
+            background: rgba(255,255,255,0.2);
+            color: white;
+            border: 2px solid rgba(255,255,255,0.3);
+        }
+ 
+        .btn-primary:hover, .btn-primary:active {
+            background: rgba(255,255,255,0.3);
+            transform: translateY(-2px);
+        }
+ 
+        .btn-success {
+            background: rgba(76, 175, 80, 0.8);
+            color: white;
+        }
+ 
+        .btn-danger {
+            background: rgba(244, 67, 54, 0.8);
+            color: white;
+        }
+ 
+        .stats {
+            display: flex;
+            gap: 20px;
+            background: rgba(255,255,255,0.1);
+            padding: 15px 25px;
+            border-radius: 20px;
+            backdrop-filter: blur(10px);
+            color: white;
+            font-size: 0.9em;
+        }
+ 
+        .stat-item {
+            text-align: center;
+        }
+ 
+        .stat-value {
+            font-size: 1.5em;
+            font-weight: bold;
+            display: block;
+        }
+ 
+        .level-indicator {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: rgba(255,255,255,0.2);
+            color: white;
+            padding: 8px 15px;
+            border-radius: 15px;
+            font-size: 0.8em;
+            font-weight: bold;
+        }
+ 
+        .intro-screen {
+            text-align: center;
+            color: white;
+            max-width: 400px;
+        }
+ 
+        .intro-screen h2 {
+            font-size: 2em;
+            margin-bottom: 20px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+ 
+        .intro-screen p {
+            font-size: 1.1em;
+            line-height: 1.6;
+            margin-bottom: 30px;
+            opacity: 0.9;
+        }
+ 
+        .start-btn {
+            background: linear-gradient(135deg, #4CAF50 0%, #45a049 100%);
+            color: white;
+            padding: 20px 40px;
+            border: none;
+            border-radius: 30px;
+            font-size: 1.2em;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+ 
+        .start-btn:hover, .start-btn:active {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.3);
+        }
+ 
+        @media (max-width: 480px) {
+            .flashcard {
+                width: 280px;
+                height: 380px;
+            }
+            
+            .hebrew-char {
+                font-size: 6em;
+            }
+            
+            .controls {
+                flex-direction: column;
+                align-items: center;
+            }
+            
+            .btn {
+                width: 200px;
+            }
+            
+            .stats {
+                flex-direction: column;
+                gap: 10px;
+            }
+        }
+ 
+        .celebration {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 1000;
+        }
+ 
+        .confetti {
+            position: absolute;
+            width: 10px;
+            height: 10px;
+            background: #FFD700;
+            animation: confetti-fall 3s linear forwards;
+        }
+ 
+        @keyframes confetti-fall {
+            to {
+                transform: translateY(100vh) rotate(360deg);
+                opacity: 0;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div>Hebrew Alphabet Mastery</div>
+        <div class="progress-bar">
+            <div class="progress-fill" id="progressFill"></div>
+        </div>
+    </div>
+ 
+    <div class="level-indicator" id="levelIndicator">Level 1</div>
+ 
+    <div class="main-container" id="mainContainer">
+        <div class="intro-screen" id="introScreen">
+            <h2>🔤 Hebrew Alphabet Journey</h2>
+            <p>Master the Hebrew alphabet through progressive flashcards designed for adult learners. We'll start with familiar patterns and build your recognition skills step by step.</p>
+            <button class="start-btn" onclick="startLearning()">Begin Learning</button>
+        </div>
+ 
+        <div id="learningInterface" style="display: none;">
+            <div class="mode-selector">
+                <button class="mode-btn active" onclick="setMode('recognition')">Recognition</button>
+                <button class="mode-btn" onclick="setMode('recall')">Recall</button>
+                <button class="mode-btn" onclick="setMode('mixed')">Mixed</button>
+            </div>
+ 
+            <div class="flashcard-container">
+                <div class="flashcard" id="flashcard" onclick="flipCard()">
+                    <div class="card-face card-front" id="cardFront">
+                        <div class="hebrew-char" id="hebrewChar"></div>
+                        <div class="recognition-hint" id="recognitionHint"></div>
+                    </div>
+                    <div class="card-face card-back" id="cardBack">
+                        <div class="letter-info" id="letterName"></div>
+                        <div class="letter-sound" id="letterSound"></div>
+                        <div class="visual-memory" id="visualMemory"></div>
+                    </div>
+                </div>
+            </div>
+ 
+            <div class="controls">
+                <button class="btn btn-danger" onclick="markWrong()">Need Practice</button>
+                <button class="btn btn-primary" onclick="flipCard()">Flip Card</button>
+                <button class="btn btn-success" onclick="markCorrect()">Got It!</button>
+            </div>
+ 
+            <div class="stats">
+                <div class="stat-item">
+                    <span class="stat-value" id="currentCard">1</span>
+                    <span>Current</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-value" id="totalCards">22</span>
+                    <span>Total</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-value" id="accuracy">0%</span>
+                    <span>Accuracy</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-value" id="streak">0</span>
+                    <span>Streak</span>
+                </div>
+            </div>
+        </div>
+    </div>
+ 
+    <div class="celebration" id="celebration"></div>
+ 
+    <script>
+        const hebrewLetters = [
+            {
+                letter: 'ת', name: 'Tav', sound: 't', 
+                hint: 'Like "T" in Torah', 
+                memory: 'Looks like a goalpost or doorframe',
+                level: 1, frequency: 'very common'
+            },
+            {
+                letter: 'ו', name: 'Vav', sound: 'v/w', 
+                hint: 'Like "V" in David', 
+                memory: 'Looks like a nail or hook',
+                level: 1, frequency: 'extremely common'
+            },
+            {
+                letter: 'ר', name: 'Resh', sound: 'r', 
+                hint: 'Like "R" in Rachel', 
+                memory: 'Looks like the top of a head',
+                level: 1, frequency: 'very common'
+            },
+            {
+                letter: 'ה', name: 'Hey', sound: 'h', 
+                hint: 'Like "H" in Hallelujah', 
+                memory: 'Looks like a person with arms raised',
+                level: 1, frequency: 'extremely common'
+            },
+            {
+                letter: 'א', name: 'Alef', sound: 'silent', 
+                hint: 'Silent letter like in "uh-oh"', 
+                memory: 'Looks like an X with a diagonal line',
+                level: 2, frequency: 'extremely common'
+            },
+            {
+                letter: 'ל', name: 'Lamed', sound: 'l', 
+                hint: 'Like "L" in Shalom', 
+                memory: 'Tallest letter, reaches up like a giraffe',
+                level: 2, frequency: 'very common'
+            },
+            {
+                letter: 'מ', name: 'Mem', sound: 'm', 
+                hint: 'Like "M" in Mazel', 
+                memory: 'Looks like a house or box',
+                level: 2, frequency: 'very common'
+            },
+            {
+                letter: 'ש', name: 'Shin', sound: 'sh', 
+                hint: 'Like "SH" in Shalom', 
+                memory: 'Has three teeth like a fork',
+                level: 2, frequency: 'common'
+            },
+            {
+                letter: 'ב', name: 'Bet', sound: 'b/v', 
+                hint: 'Like "B" in Shabbat', 
+                memory: 'Looks like a house with a roof',
+                level: 3, frequency: 'very common'
+            },
+            {
+                letter: 'י', name: 'Yod', sound: 'y', 
+                hint: 'Like "Y" in Yom (day)', 
+                memory: 'Smallest letter, like an apostrophe',
+                level: 3, frequency: 'extremely common'
+            },
+            {
+                letter: 'נ', name: 'Nun', sound: 'n', 
+                hint: 'Like "N" in Menorah', 
+                memory: 'Looks like a backwards C',
+                level: 3, frequency: 'common'
+            },
+            {
+                letter: 'כ', name: 'Kaf', sound: 'k/ch', 
+                hint: 'Like "K" in Kosher', 
+                memory: 'Looks like a backwards C with a bottom',
+                level: 3, frequency: 'common'
+            },
+            {
+                letter: 'ד', name: 'Dalet', sound: 'd', 
+                hint: 'Like "D" in David', 
+                memory: 'Looks like a door or corner',
+                level: 4, frequency: 'common'
+            },
+            {
+                letter: 'ג', name: 'Gimel', sound: 'g', 
+                hint: 'Like "G" in Golem', 
+                memory: 'Looks like a foot or leg',
+                level: 4, frequency: 'less common'
+            },
+            {
+                letter: 'ע', name: 'Ayin', sound: 'silent/guttural', 
+                hint: 'Silent like in Gaza', 
+                memory: 'Looks like an eye or circle',
+                level: 4, frequency: 'common'
+            },
+            {
+                letter: 'פ', name: 'Peh', sound: 'p/f', 
+                hint: 'Like "P" in Pesach', 
+                memory: 'Looks like an open mouth',
+                level: 4, frequency: 'common'
+            },
+            {
+                letter: 'ס', name: 'Samech', sound: 's', 
+                hint: 'Like "S" in Sukkot', 
+                memory: 'Perfect circle, like the sun',
+                level: 5, frequency: 'less common'
+            },
+            {
+                letter: 'ח', name: 'Chet', sound: 'ch', 
+                hint: 'Guttural "CH" like in Bach', 
+                memory: 'Looks like a gate or archway',
+                level: 5, frequency: 'common'
+            },
+            {
+                letter: 'ז', name: 'Zayin', sound: 'z', 
+                hint: 'Like "Z" in Zion', 
+                memory: 'Looks like a sword or weapon',
+                level: 5, frequency: 'less common'
+            },
+            {
+                letter: 'ק', name: 'Qof', sound: 'k', 
+                hint: 'Another "K" sound', 
+                memory: 'Has a tail that goes below the line',
+                level: 5, frequency: 'less common'
+            },
+            {
+                letter: 'צ', name: 'Tzadi', sound: 'ts', 
+                hint: 'Like "TS" in Matzah', 
+                memory: 'Looks like a fishing hook',
+                level: 6, frequency: 'less common'
+            },
+            {
+                letter: 'ט', name: 'Tet', sound: 't', 
+                hint: 'Another "T" sound', 
+                memory: 'Looks like a snake or curved line',
+                level: 6, frequency: 'less common'
+            }
+        ];
+ 
+        let currentMode = 'recognition';
+        let currentIndex = 0;
+        let currentLevel = 1;
+        let correctAnswers = 0;
+        let totalAnswers = 0;
+        let streak = 0;
+        let isFlipped = false;
+        let masteredLetters = new Set();
+        let practiceQueue = [];
+ 
+        function startLearning() {
+            document.getElementById('introScreen').style.display = 'none';
+            document.getElementById('learningInterface').style.display = 'block';
+            
+            initializePracticeQueue();
+            showCurrentCard();
+            updateStats();
+        }
+ 
+        function initializePracticeQueue() {
+            practiceQueue = hebrewLetters
+                .filter(letter => letter.level <= currentLevel)
+                .sort((a, b) => a.level - b.level);
+        }
+ 
+        function setMode(mode) {
+            currentMode = mode;
+            document.querySelectorAll('.mode-btn').forEach(btn => btn.classList.remove('active'));
+            event.target.classList.add('active');
+            showCurrentCard();
+        }
+ 
+        function showCurrentCard() {
+            if (currentIndex >= practiceQueue.length) {
+                levelUp();
+                return;
+            }
+ 
+            const letter = practiceQueue[currentIndex];
+            const flashcard = document.getElementById('flashcard');
+            
+            // Reset flip state
+            isFlipped = false;
+            flashcard.classList.remove('flipped');
+ 
+            // Update front of card based on mode
+            if (currentMode === 'recognition') {
+                document.getElementById('hebrewChar').textContent = letter.letter;
+                document.getElementById('recognitionHint').textContent = letter.hint;
+            } else if (currentMode === 'recall') {
+                document.getElementById('hebrewChar').textContent = '?';
+                document.getElementById('recognitionHint').textContent = `What letter makes the "${letter.sound}" sound?`;
+            } else { // mixed
+                const showLetter = Math.random() > 0.5;
+                if (showLetter) {
+                    document.getElementById('hebrewChar').textContent = letter.letter;
+                    document.getElementById('recognitionHint').textContent = 'What is this letter called?';
+                } else {
+                    document.getElementById('hebrewChar').textContent = '?';
+                    document.getElementById('recognitionHint').textContent = `What letter is "${letter.name}"?`;
+                }
+            }
+ 
+            // Update back of card
+            document.getElementById('letterName').textContent = letter.name;
+            document.getElementById('letterSound').textContent = `"${letter.sound}" sound`;
+            document.getElementById('visualMemory').textContent = letter.memory;
+ 
+            // Speak the letter name
+            if ('speechSynthesis' in window) {
+                const utterance = new SpeechSynthesisUtterance(letter.name);
+                utterance.rate = 0.7;
+                speechSynthesis.speak(utterance);
+            }
+        }
+ 
+        function flipCard() {
+            const flashcard = document.getElementById('flashcard');
+            isFlipped = !isFlipped;
+            flashcard.classList.toggle('flipped');
+        }
+ 
+        function markCorrect() {
+            correctAnswers++;
+            totalAnswers++;
+            streak++;
+            
+            const letter = practiceQueue[currentIndex];
+            masteredLetters.add(letter.name);
+            
+            celebrate();
+            nextCard();
+        }
+ 
+        function markWrong() {
+            totalAnswers++;
+            streak = 0;
+            
+            // Add the current letter back to the queue for more practice
+            const letter = practiceQueue[currentIndex];
+            practiceQueue.push({...letter});
+            
+            nextCard();
+        }
+ 
+        function nextCard() {
+            currentIndex++;
+            updateStats();
+            
+            setTimeout(() => {
+                showCurrentCard();
+            }, 500);
+        }
+ 
+        function levelUp() {
+            if (currentLevel < 6) {
+                currentLevel++;
+                currentIndex = 0;
+                initializePracticeQueue();
+                
+                // Big celebration for level up
+                bigCelebration();
+                
+                setTimeout(() => {
+                    alert(`🎉 Level ${currentLevel} Unlocked! 🎉\nNew letters added to your practice!`);
+                    showCurrentCard();
+                }, 1000);
+            } else {
+                // Completed all levels
+                alert('🏆 Congratulations! You\'ve mastered the Hebrew alphabet! 🏆');
+            }
+            
+            updateLevelIndicator();
+        }
+ 
+        function updateStats() {
+            document.getElementById('currentCard').textContent = Math.min(currentIndex + 1, practiceQueue.length);
+            document.getElementById('totalCards').textContent = practiceQueue.length;
+            document.getElementById('accuracy').textContent = totalAnswers > 0 ? Math.round((correctAnswers / totalAnswers) * 100) + '%' : '0%';
+            document.getElementById('streak').textContent = streak;
+            
+            // Update progress bar
+            const progress = (currentIndex / practiceQueue.length) * 100;
+            document.getElementById('progressFill').style.width = progress + '%';
+        }
+ 
+        function updateLevelIndicator() {
+            document.getElementById('levelIndicator').textContent = `Level ${currentLevel}`;
+        }
+ 
+        function celebrate() {
+            const celebration = document.getElementById('celebration');
+            
+            for (let i = 0; i < 10; i++) {
+                setTimeout(() => {
+                    const confetti = document.createElement('div');
+                    confetti.className = 'confetti';
+                    confetti.style.left = Math.random() * 100 + '%';
+                    confetti.style.backgroundColor = ['#FFD700', '#FF6B6B', '#4ECDC4', '#45B7D1', '#96CEB4'][Math.floor(Math.random() * 5)];
+                    confetti.style.animationDelay = Math.random() * 0.5 + 's';
+                    celebration.appendChild(confetti);
+                    
+                    setTimeout(() => confetti.remove(), 3000);
+                }, i * 100);
+            }
+        }
+ 
+        function bigCelebration() {
+            const celebration = document.getElementById('celebration');
+            
+            for (let i = 0; i < 30; i++) {
+                setTimeout(() => {
+                    const confetti = document.createElement('div');
+                    confetti.className = 'confetti';
+                    confetti.style.left = Math.random() * 100 + '%';
+                    confetti.style.backgroundColor = ['#FFD700', '#FF6B6B', '#4ECDC4', '#45B7D1', '#96CEB4'][Math.floor(Math.random() * 5)];
+                    confetti.style.animationDelay = Math.random() * 1 + 's';
+                    celebration.appendChild(confetti);
+                    
+                    setTimeout(() => confetti.remove(), 4000);
+                }, i * 50);
+            }
+        }
+ 
+        // Keyboard shortcuts
+        document.addEventListener('keydown', function(e) {
+            if (e.code === 'Space') {
+                e.preventDefault();
+                flipCard();
+            } else if (e.code === 'ArrowRight' || e.code === 'Enter') {
+                e.preventDefault();
+                markCorrect();
+            } else if (e.code === 'ArrowLeft') {
+                e.preventDefault();
+                markWrong();
+            }
+        });
+ 
+        // Touch gestures for mobile
+        let touchStartX = 0;
+        let touchEndX = 0;
+ 
+        document.addEventListener('touchstart', function(e) {
+            touchStartX = e.changedTouches[0].screenX;
+        });
+ 
+        document.addEventListener('touchend', function(e) {
+            touchEndX = e.changedTouches[0].screenX;
+            handleSwipe();
+        });
+ 
+        function handleSwipe() {
+            const swipeDistance = touchEndX - touchStartX;
+            if (Math.abs(swipeDistance) > 50) {
+                if (swipeDistance > 0) {
+                    markCorrect(); // Swipe right = correct
+                } else {
+                    markWrong(); // Swipe left = wrong
+                }
+            }
+        }
+ 
+        // Initialize the app
+        updateLevelIndicator();
+    </script>
+</body>
+</html>
